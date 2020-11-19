@@ -1,0 +1,13 @@
+{
+    "name": "sitepilot/helm-charts",
+    "description": "Helm charts used for deploying sites to the Sitepilot managed hosting platform.",
+    "type": "library",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Nick Jansen",
+            "email": "n.jansen@sitepilot.io"
+        }
+    ],
+    "require": {}
+}

@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullName" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: "/-/health/"
+              port: http
+          readinessProbe:
+            httpGet:
+              path: "/-/health/"
+              port: http
+          env:
+            - name: "UPDATE_FILE_PERMISSIONS"
+              value: "true"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /opt/sitepilot/app
+              name: app-data
+              subPath: apps/{{ include "app.name" . }}
+            - name: app-config
+              mountPath: /opt/sitepilot/config
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "pool.sitepilot.io/name"
+                    operator: "In"
+                    values: [
+                      "{{ .Values.pool }}"
+                    ]
+              topologyKey: "kubernetes.io/hostname"
+      volumes:
+        {{- if .Values.localPath }}
+        - name: app-data
+          hostPath:
+            path: {{ .Values.localPath }}
+            type: Directory
+        {{- else }}
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: pool-{{ .Values.pool }}
+        {{- end }}
+        - name: app-config
+          secret:
+            secretName: {{ include "app.fullName" . }}

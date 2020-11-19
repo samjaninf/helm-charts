@@ -1,0 +1,34 @@
+---
+type: app
+
+pool: h2m57
+
+localPath: null
+
+image:
+  repository: sitepilot/runtime
+  pullPolicy: Always
+  tag: latest
+
+service:
+  ssh:
+    port: 0
+
+ingress:
+  enabled: true
+  rootDomain: "sitepilot.dev"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+#  hosts:
+#    - host: 'domain.com'
+
+resources:
+  # limits:
+  #  cpu: 500m
+  #  memory: 256Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+runtime:
+  server: {}

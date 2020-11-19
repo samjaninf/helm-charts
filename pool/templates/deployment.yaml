@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ include "pool.fullName" . }}"
+  labels:
+    {{- include "pool.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pool.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      name: "{{ include "pool.fullName" . }}"
+      labels:
+        {{- include "pool.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: busybox
+          image: busybox
+          command: ["/bin/sh", "-c", "--"]
+          args: ["while true; do sleep 30; done;"]
+          volumeMounts:
+            - mountPath: /opt/sitepilot/apps
+              name: apps-data
+              subPath: apps
+      volumes:
+        - name: apps-data
+          persistentVolumeClaim:
+            claimName: "{{ include "pool.fullName" . }}"

@@ -1,0 +1,18 @@
+{{- if .Values.service.ssh.port -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.fullName" . }}-ssh
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  ports:
+    - port: 2222
+      targetPort: ssh
+      protocol: TCP
+      name: ssh
+      nodePort: {{ .Values.service.ssh.port }}
+  selector:
+    {{- include "app.selectorLabels" . | nindent 4 }}
+{{- end }}
